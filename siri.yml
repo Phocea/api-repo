@@ -1,0 +1,165 @@
+openapi: 3.0.1
+info:
+  title: Message API for the TL Website
+  version: 1.1.0
+  description:  >-
+    This contract describe the API used by TL Website to retrieve traffic information messages.
+paths:
+  '/infotraffic_messages':
+    get:
+      description: >-
+        Get all the messages for a line or for all lines, filtered by passenger equipment type
+      parameters:
+        - in: query
+          name: line_name
+          schema:
+            type: string
+          description: >-
+            The line name or line names separated by coma
+        - in: query
+          name: passenger_equipment_type
+          schema:
+            type: string
+          description: >-
+            The list of equipment impacted by the messages. This defines on which media the message should be displayed. Values can be WEB, BOTER, APP, BOEMB
+      responses:
+        '200':
+          description:  >-
+            A list of disturbance messages for the given line. If omitted messages on all lines are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessagesData'
+  '/information_messages/{boter_id}':
+    get:
+      description: >-
+        Get all the messages for the given BOTER ID (Hastus or Synthese ID).
+      parameters:
+        - in: path
+          name: boter_id
+          required: true
+          schema:
+            type: string
+          description: >-
+            Hastus or Synthese ID of the information display for which to retrieve messages. If only numeric then identified as the Synthese ID, otherwise Hastus ID
+      responses:
+        '200':
+          description:  >-
+            A list of disturbance messages for the given boter identifierd by its Hastus ID or Synthese id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessagesData'
+components:
+  schemas:
+    MessagesData:
+      type: object
+      title: Messages root schema
+      required:
+          - "messages"
+      properties:
+        messages:
+          type: array
+          items:
+            type: "object"
+            required:
+              - "message_id"
+              - "impacted_equipments"
+              - "impacted_lines"
+              - "title"
+              - "content"
+              - "priority"
+              - "impact_start_date"
+              - "impact_end_date"
+              - "home_page"
+              - "start_date"
+              - "end_date"
+            properties:
+              message_id:
+                type: string
+                description: >-
+                  The unique message identifier
+                example:  "15656156894"
+              impacted_equipments:
+                description: >-
+                  The list of equipment impacted by this message. This define on which media the message should be displayed.
+                type: array
+                items:
+                  type: "string"
+                  example: "WEB"
+              impacted_lines:
+                type: array
+                items:
+                  type: "object"
+                  required:
+                    - "line_id"
+                    - "short_name"
+                  properties:
+                    line_id:
+                      type: integer
+                      example: 78
+                    short_name:
+                      type: string
+                      example: "LEB"
+                    long_name:
+                      type: string
+                      example: "Lausanne-Flon-Bercher"
+              title:
+                type: string
+                description: >-
+                  The title of the traffic information message
+                example: "Information"
+              content:
+                type: string
+                description: >-
+                  The content of the traffic information message
+                example:  "Expect delay on the metro line due to some electrical failure"
+              priority:
+                type: string
+                description: >-
+                  The priority of the message
+                example: 10
+              attachment:
+                type: string
+                description: >-
+                  the url of the attachement
+                example: "https:/.../travaux.pdf"
+              home_page:
+                type: boolean
+                description: >-
+                  must it be displayed on the home page
+                default: false
+                example: true
+              impacted_trip_id:
+                type: string
+                description: >-
+                  The impacted trip ID the vehicle is currently performing. In the railway world this is often referred as the train id. This is used for messages only impacting a specific trip ID.
+                example: '125'
+              impact_start_date:
+                type: string
+                format: date-time
+                description: >-
+                  The date and time at which the disturbance starts
+                  as defined by RFC 3339, section 5.6
+                  (https://tools.ietf.org/html/rfc3339#section-5.6).
+                example: '2020-08-21T17:32:28Z'
+              impact_end_date:
+                type: string
+                format: date-time
+                description: >-
+                  The date and time at which the disturbance ends
+                  as defined by RFC 3339, section 5.6
+                  (https://tools.ietf.org/html/rfc3339#section-5.6).
+                example: '2020-08-24T06:32:28Z'
+              start_date:
+                type: string
+                format: date-time
+                description: >-
+                  The date and time at which the message validation starts
+                example: '2020-08-21T17:32:28Z'
+              end_date:
+                type: string
+                format: date-time
+                description: >-
+                  The date and time at which the message validation ends
+                example: '2020-08-24T06:32:28Z'
